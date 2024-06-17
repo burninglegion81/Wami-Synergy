@@ -21,7 +21,15 @@ jobs:
       with:
         path: .
 
-    - uses: actions/upload-artifact@v2
+    - name: Archive Release
+      uses: thedoctor0/zip-release@0.7.5
       with:
-        name: Linux Binary
-        path: ./dist/windows
+        type: 'zip'
+        filename: 'windows exe.zip'
+        directory: ./dist/windows
+      
+    - name: Upload Release
+      uses: ncipollo/release-action@v1.12.0
+      with:
+        artifacts: "release.zip"
+
