@@ -1,2 +1,3 @@
 rmdir .\dist /s /q
-.\.venv\Scripts\pyinstaller app.py
+rmdir .\build /s /q
+.\.venv\Scripts\pyinstaller synergy_optimizer.py
