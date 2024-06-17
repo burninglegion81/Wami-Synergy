@@ -1,8 +1,6 @@
 from backend import Backend
 from frontend.main_screen import MainScreen
 import sys
-import os
-import json
 
 from PySide6.QtWidgets import QApplication
 
