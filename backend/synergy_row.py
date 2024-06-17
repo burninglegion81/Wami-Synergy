@@ -1,7 +1,7 @@
-import numpy as np
 import math
+
+import numpy as np
 from PySide6.QtCore import Signal, Slot, Property as QProperty, QObject
-import time
 
 class SynergyRow(QObject):
     '''

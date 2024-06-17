@@ -1,7 +1,8 @@
 from typing import Dict, List
-from  .synergy_row import SynergyRow
 import numpy as np
-from PySide6.QtCore import Signal, Slot, Property as QProperty, QObject
+from PySide6.QtCore import  QObject
+
+from  backend.synergy_row import SynergyRow
 
 
 class SynergyPage(QObject):

@@ -1,12 +1,13 @@
-from PySide6.QtCore import Signal, Slot, Property as QProperty, QObject
-import numpy as np
-import math
-from backend import SynergyPage, SynergyRow
-from typing import Dict, List
 import time
 import json
 import os
-from typing import Optional
+from typing import Optional, Dict, List
+import math
+
+from PySide6.QtCore import Signal, Slot, Property as QProperty, QObject
+import numpy as np 
+
+from backend import SynergyPage
 
 if os.name == "nt":
     JSON_SAVE_LOCATION = os.path.join(os.getenv('APPDATA'), "WAMI Optimizer", "synergy_settings.json")
