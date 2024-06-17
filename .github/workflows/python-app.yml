@@ -15,24 +15,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: Package Application
-      uses: JackMcKew/pyinstaller-action-windows@main
+    # Setup Python
+    - uses: actions/setup-python@v5
       with:
-        path: .
+        python-version: '3.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+        architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+        cache: 'pip'
+        cache-dependency-path: |
+          ./requirements.txt
+    
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt 
 
-    - name: Archive Release
-      uses: thedoctor0/zip-release@0.7.5
+      # Build python script into a stand-alone exe
+    - uses: Nuitka/Nuitka-Action@main
       with:
-        type: 'zip'
-        filename: 'windows exe.zip'
-        directory: ./dist/windows
-      
-    - name: Upload Release
-      uses: ncipollo/release-action@v1.12.0
+        nuitka-version: main
+        script-name: synergy_optimizer.py
+        onefile: true
+        enable-plugins: pyside6
+
+      # Uploads artifact
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
       with:
-        artifacts: "./dist/windows/release.zip"
-        tag: "Latest"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        name: synergy build
+        path: build/synergy_optimizer.exe
 
