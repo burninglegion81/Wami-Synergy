@@ -43,5 +43,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: synergy build
-        path: build/synergy_optimizer.exe
+        path: build/synergy_optimizer.bin
 
