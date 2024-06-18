@@ -21,17 +21,10 @@ jobs:
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
         path: .
-
-    - name: Archive Release
-      uses: thedoctor0/zip-release@0.7.5
-      with:
-        type: 'zip'
-        filename: 'windows exe.zip'
-        directory: ./dist/windows
   
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: name-of-artifact
-        path: ./windows exe.zip
+        path: ./dist/windows
 
