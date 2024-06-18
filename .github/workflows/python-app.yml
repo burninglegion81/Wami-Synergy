@@ -28,5 +28,10 @@ jobs:
         type: 'zip'
         filename: 'windows exe.zip'
         directory: ./dist/windows
-      
+  
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: name-of-artifact
+        path: ./dist/windows exe.zip
 
