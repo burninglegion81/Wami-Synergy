@@ -45,7 +45,7 @@ jobs:
           onefile: true
           enable-plugins: |
             pyside6
-            numpy-plugin
+            numpy
 
       # Uploads artifact
       - name: Upload Artifact
