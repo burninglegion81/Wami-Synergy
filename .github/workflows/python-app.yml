@@ -42,7 +42,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: synergy_optimizer.py
-          onefile: true
+          standalone: true
           enable-plugins: |
             pyside6
             numpy
@@ -53,6 +53,5 @@ jobs:
         with:
           name: synergy build
           path: |
-            build/*.bin
-            build/*.exe
+            build/*
 
