@@ -87,7 +87,7 @@ class Backend(QObject):
         #potion calculation, base effectiveness of 50%
         power = power * (1 + self.syn_pot_active *(self.potion_bonus-1))
         #trophies
-        power = power* (1 + self.newb_power_trophy*.05 + self.pro_power_trophy*.1)
+        power = power* (1 + self.newb_power_trophy*.1 + self.pro_power_trophy*.2)
         #soul purchase, .25001 due to rounding things
         power = power * (1 + self.syn_power_soul_purchase * .25001)
         #adventure items, need to convert from %
