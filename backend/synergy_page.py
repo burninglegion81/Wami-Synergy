@@ -70,14 +70,18 @@ class SynergyPage(QObject):
         speed_capped_array = [False] * number_rows
         overcapped_array = np.zeros(number_rows)
         syn_energy_total = 0
-        for i in range(len(baby_demon_array)):
-            syn_energy_row, speed_capped, overcapped = self.synergy_rows[i+1].calculate_syn_energy_per_tick(baby_demon_array[i], progress_mult)
-            syn_energy_total += syn_energy_row
-            speed_capped_array[i] = speed_capped
-            overcapped_array[i] = overcapped
+        for i, bd in enumerate(baby_demon_array):
+            if bd == 0:
+                speed_capped_array[i] = False
+                overcapped_array[i] = 0
+            else:
+                syn_energy_row, speed_capped, overcapped = self.synergy_rows[i+1].calculate_syn_energy_per_tick(bd, progress_mult)
+                syn_energy_total += syn_energy_row
+                speed_capped_array[i] = speed_capped
+                overcapped_array[i] = overcapped
         return syn_energy_total, speed_capped_array, overcapped_array
     
-    def get_min_tick(self, row:int, baby_demon_available:int, progress_mult:int, power_mult:int) -> Tuple[int, float, float]:
+    def get_min_tick(self, row:int, baby_demon_available:int, progress_mult:int, power_mult:int) -> Tuple[int, float]:
         '''
         Given a row and number of BD to use, returns the number of BD needed to not overcap that row, as well as the
         gains/tick resulting from this distribution
