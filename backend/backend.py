@@ -1,7 +1,7 @@
 import time
 import json
 import os
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 import math
 
 from PySide6.QtCore import Signal, Slot, Property as QProperty, QObject
@@ -258,7 +258,7 @@ class Backend(QObject):
 
     ### Optimization Functions
 
-    def maximize_one_row(self, page:int, row:int):
+    def maximize_one_row(self, page:int, row:int) -> Tuple[np.ndarray, np.ndarray, float]:
         '''
         Greedy algorithm to maximize the gains on one row.
         General algo is:
@@ -280,13 +280,15 @@ class Backend(QObject):
         gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
         max_iter = 100*self.total_bd
         iter = 0
+        previous_bd = None
         
-        while np.any(gains_array < 0) and iter < max_iter:
+        while np.any(gains_array < 0) and iter < max_iter and bd_array is not previous_bd:
             iter += 1
+            previous_bd = bd_array.copy()
             min_row = np.argmin(gains_array)
             max_row = min_row+1
                     
-            if speed_capped_array[max_row]:
+            if speed_capped_array[max_row] and overcapped_array[max_row] != 0:
                 bd_array[max_row] -= overcapped_array[max_row]
                 bd_array[min_row] += overcapped_array[max_row]
             else:
@@ -299,7 +301,7 @@ class Backend(QObject):
         return bd_array, gains_array, syn_energy
     
     
-    def flat_up_to_row(self, page:int, row:int, bd:Optional[int] = None):
+    def flat_up_to_row(self, page:int, row:int, bd:Optional[int] = None) -> Tuple[np.ndarray, np.ndarray, float]:
         '''
         Greedy algorithm to try to keep gains "flat" up to a certain row.
         This tries to get all of the gains/hour roughly equal
@@ -324,7 +326,7 @@ class Backend(QObject):
         gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
         max_iter = 10*self.total_bd
         iter = 0
-        
+        previous_bd = None
 
         while iter < max_iter:
             iter += 1
@@ -333,13 +335,17 @@ class Backend(QObject):
                 #if the min row is ever the first one, stop there
                 break
             take_row = min_row+1 #takes BD from the following row
-            previous_bd = bd_array
-            if speed_capped_array[take_row]:
+            if previous_bd is bd_array:
+                #stops any infinite loops
+                break
+            previous_bd = bd_array.copy()
+            if speed_capped_array[take_row] and overcapped_array[take_row] != 0:
                 bd_array[take_row] -= overcapped_array[take_row]
                 bd_array[min_row] += overcapped_array[take_row]
             else:
                 bd_array[take_row] -= 1
                 bd_array[min_row] += 1
+            
 
             gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
 
@@ -347,11 +353,10 @@ class Backend(QObject):
         bd_array = previous_bd
         print(f"Maximization finished after {iter+1} iterations, and took {time.time() - start_time} s")
         gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
-        
         syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
         return bd_array, gains_array, syn_energy
     
-    def see_maximization_one_page(self, page:int):
+    def see_maximization_one_page(self, page:int) -> Tuple[np.ndarray, np.ndarray, float]:
         '''
         Optimization to show the user what gains are possible on a single page if synergy, if they were
         to maximize any single row.
@@ -369,12 +374,11 @@ class Backend(QObject):
         
         return np.zeros(7, dtype=int), gains_array, 0
     
-    def see_min_tick_one_page(self, page:int):
+    def see_min_tick_one_page(self, page:int) -> Tuple[np.ndarray, np.ndarray, float]:
         '''
         Optimization to show the user how many BD are needed to min tick all rows on each page.
         This doesnt take into account any lower or higher rows, just each row individually
         '''
-        start_time = time.time()
         bd_array = np.zeros(7, dtype=int)
         gains_array = np.zeros(7)
         for i in range(7):
@@ -382,3 +386,19 @@ class Backend(QObject):
             bd_array[i] = required_bd
             gains_array[i] = gains_tick
         return bd_array, gains_array, 0
+    
+    def min_tick_row_flat_below(self, page:int, row:int) -> Tuple[np.ndarray, np.ndarray, float]:
+        '''
+        Does a min tick number of BD in the desired row, and then does a flat distribution below that row
+        '''
+        final_row_bd, final_row_gains = self.synergy_pages[page].get_min_tick(row, self.total_bd, self.synergy_progress, self.synergy_power)
+        remaining_bd = self.total_bd - final_row_bd
+        if row == 1:
+            syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick([final_row_bd], self.synergy_progress)
+            return [final_row_bd], [final_row_gains], syn_energy
+        else:
+            bd_array, gains_array, _ = self.flat_up_to_row(page, row-1, remaining_bd)
+            bd_array = np.hstack((bd_array, [final_row_bd]))
+            gains_array, _, _ = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
+            syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
+            return bd_array, gains_array, syn_energy
