@@ -26,7 +26,7 @@ class SynergyRowWidget(QFrame):
         self.level_label = QLabel("Level:")
         self.level_entry = QSpinBox()
         self.level_entry.setRange(0,1000000)
-        self.level_entry.setMinimumWidth(50)
+        self.level_entry.setMinimumWidth(75)
         self.level_entry.setValue(self.backend.synergy_pages[self.page].synergy_rows[self.row].level)
         
         self.point_label = QLabel("Points:")
