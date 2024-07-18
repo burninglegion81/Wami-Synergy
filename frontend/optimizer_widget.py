@@ -52,11 +52,13 @@ class OptimizerWidget(QWidget):
         self.flat_button = QRadioButton("Make gains equal up to row")
         self.max_page_button = QRadioButton("Show potential gains on one page")
         #button to do min tick on one row, flat below it
-        #button to find min tick calculations for an entire page, independently
+        self.min_page_button = QRadioButton("See BD required to min tick each row on one page")
         #button to maximuze synergy energy gains/hour
         self.method_group.addButton(self.max_button)
         self.method_group.addButton(self.flat_button)
         self.method_group.addButton(self.max_page_button)
+
+        self.method_group.addButton(self.min_page_button)
 
         self.max_button.setChecked(True)
         
@@ -71,6 +73,7 @@ class OptimizerWidget(QWidget):
         setup_layout.addWidget(self.max_button,5,0,1,2)
         setup_layout.addWidget(self.flat_button,6,0,1,2)
         setup_layout.addWidget(self.max_page_button,7,0,1,2)
+        setup_layout.addWidget(self.min_page_button, 9,0,1,2)
 
         #now we display the results of the script optimization
         self.results_groupbox = QGroupBox("Optimization Results")
@@ -184,9 +187,22 @@ class OptimizerWidget(QWidget):
             bd, gains_tick, syn_energy = self.backend.flat_up_to_row(page, row)
         elif selected_button == self.max_page_button:
             bd, gains_tick, syn_energy = self.backend.see_maximization_one_page(page)
+        elif selected_button == self.min_page_button:
+            bd, gains_tick, syn_energy = self.backend.see_min_tick_one_page(page)
 
         self.update_results(bd, gains_tick, syn_energy)
     
+    def text_helper(self, value:float) -> str:
+        '''
+        Helper function to display values in a repeatable way
+        '''
+        if value > 1e6:
+            return f"{value:.2e}"
+        elif value > 100:
+            return f"{value:.1f}"
+        else:
+            return f"{value:.3f}"
+
     def update_results(self, bd:List[int], gains_tick:List[float], syn_energy:float):
         '''
         standaridzed function to upadte the displays after an optimization runs
@@ -197,16 +213,11 @@ class OptimizerWidget(QWidget):
             if i < optimized_rows:
                 self.bd_widgets[i].setText(f"{bd[i]:d}")
                 gain_hour = gains_tick[i]*36000
-                self.gains_hour_widgets[i].setText(f"{gain_hour:.2f}")
+                self.gains_hour_widgets[i].setText(self.text_helper(gain_hour))
                 final_points = gain_hour * self.hours_entry.value() + self.backend.synergy_pages[selected_page].synergy_rows[i+1].current_points
-                self.final_points_widgets[i].setText(f"{final_points:.0f}")
+                self.final_points_widgets[i].setText(self.text_helper(final_points))
                 final_bonus = self.backend.synergy_pages[selected_page].synergy_rows[i+1].calculate_bonus(final_points)
-                if final_bonus > 10000:
-                    self.final_bonus_widgets[i].setText(f"x{final_bonus:.1e}")
-                elif final_bonus > 100:
-                    self.final_bonus_widgets[i].setText(f"x{final_bonus:.1f}")
-                else:
-                    self.final_bonus_widgets[i].setText(f"x{final_bonus:.3f}")
+                self.final_bonus_widgets[i].setText(self.text_helper(final_bonus))
                 current_bonus = self.backend.synergy_pages[selected_page].synergy_rows[i+1].current_bonus
                 relative_gains = final_bonus/current_bonus
                 self.rel_gains_widgets[i].setText(f"x{relative_gains:.2f}")
