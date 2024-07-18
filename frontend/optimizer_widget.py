@@ -4,6 +4,7 @@ from PySide6.QtGui import QRegularExpressionValidator
 from backend import Backend
 from frontend.synergy_page_widget import SynergyPageWidget
 from typing import List
+import numpy as np
 
 class OptimizerWidget(QWidget):
     '''
@@ -51,13 +52,13 @@ class OptimizerWidget(QWidget):
         self.max_button = QRadioButton("Maximize gains on one row")
         self.flat_button = QRadioButton("Make gains equal up to row")
         self.max_page_button = QRadioButton("Show potential gains on one page")
-        #button to do min tick on one row, flat below it
+        self.min_flat_below_button = QRadioButton("Min tick a row, and do a flat distribution below it.")
         self.min_page_button = QRadioButton("See BD required to min tick each row on one page")
         #button to maximuze synergy energy gains/hour
         self.method_group.addButton(self.max_button)
         self.method_group.addButton(self.flat_button)
         self.method_group.addButton(self.max_page_button)
-
+        self.method_group.addButton(self.min_flat_below_button)
         self.method_group.addButton(self.min_page_button)
 
         self.max_button.setChecked(True)
@@ -73,6 +74,7 @@ class OptimizerWidget(QWidget):
         setup_layout.addWidget(self.max_button,5,0,1,2)
         setup_layout.addWidget(self.flat_button,6,0,1,2)
         setup_layout.addWidget(self.max_page_button,7,0,1,2)
+        setup_layout.addWidget(self.min_flat_below_button,8,0,1,2)
         setup_layout.addWidget(self.min_page_button, 9,0,1,2)
 
         #now we display the results of the script optimization
@@ -187,6 +189,8 @@ class OptimizerWidget(QWidget):
             bd, gains_tick, syn_energy = self.backend.flat_up_to_row(page, row)
         elif selected_button == self.max_page_button:
             bd, gains_tick, syn_energy = self.backend.see_maximization_one_page(page)
+        elif selected_button == self.min_flat_below_button:
+            bd, gains_tick, syn_energy = self.backend.min_tick_row_flat_below(page, row)
         elif selected_button == self.min_page_button:
             bd, gains_tick, syn_energy = self.backend.see_min_tick_one_page(page)
 
@@ -196,9 +200,9 @@ class OptimizerWidget(QWidget):
         '''
         Helper function to display values in a repeatable way
         '''
-        if value > 1e6:
+        if np.abs(value) > 1e6:
             return f"{value:.2e}"
-        elif value > 100:
+        elif np.abs(value) > 100:
             return f"{value:.1f}"
         else:
             return f"{value:.3f}"
