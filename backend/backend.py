@@ -368,3 +368,17 @@ class Backend(QObject):
         print(f"Page {page} optimization took {time.time() - start_time} s")
         
         return np.zeros(7, dtype=int), gains_array, 0
+    
+    def see_min_tick_one_page(self, page:int):
+        '''
+        Optimization to show the user how many BD are needed to min tick all rows on each page.
+        This doesnt take into account any lower or higher rows, just each row individually
+        '''
+        start_time = time.time()
+        bd_array = np.zeros(7, dtype=int)
+        gains_array = np.zeros(7)
+        for i in range(7):
+            required_bd, gains_tick = self.synergy_pages[page].get_min_tick(i+1, self.total_bd, self.synergy_progress, self.synergy_power)
+            bd_array[i] = required_bd
+            gains_array[i] = gains_tick
+        return bd_array, gains_array, 0

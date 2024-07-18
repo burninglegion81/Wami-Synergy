@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import numpy as np
 from PySide6.QtCore import  QObject
 
@@ -76,6 +76,16 @@ class SynergyPage(QObject):
             speed_capped_array[i] = speed_capped
             overcapped_array[i] = overcapped
         return syn_energy_total, speed_capped_array, overcapped_array
+    
+    def get_min_tick(self, row:int, baby_demon_available:int, progress_mult:int, power_mult:int) -> Tuple[int, float, float]:
+        '''
+        Given a row and number of BD to use, returns the number of BD needed to not overcap that row, as well as the
+        gains/tick resulting from this distribution
+        '''
+        required_bd = self.synergy_rows[row].calculate_bd_for_min_tick(baby_demon_available, progress_mult)
+        gains_tick,_, _, _ = self.synergy_rows[row].calculate_gains_per_tick(required_bd, progress_mult, power_mult)
+        return required_bd, gains_tick
+
 
     def get_all_levels(self):
         return [x.level for _, x in self.synergy_rows.items()]

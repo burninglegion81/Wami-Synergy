@@ -92,6 +92,15 @@ class SynergyRow(QObject):
             consume_per_tick = points_per_tick * self.level * 2 / self.current_progress
             return gains_per_tick, consume_per_tick, False, 0
         
+    def calculate_bd_for_min_tick(self, number_bd:int, progress_mult:float) -> int:
+        '''
+        Helper function to calculate how many BD are needed to not overcap this row of synergy
+        '''
+        points_per_tick = number_bd * progress_mult
+        ticks_to_fill = math.ceil(self.current_progress/points_per_tick) #gets how maany ticks it's currently taking to fill the bar
+        required_bd = math.ceil((self.current_progress/progress_mult)/ticks_to_fill)
+        return required_bd
+        
         
     def calculate_bonus(self, points:float):
         '''
