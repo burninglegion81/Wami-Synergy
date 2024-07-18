@@ -332,7 +332,7 @@ class Backend(QObject):
             if min_row ==  row-1:
                 #if the min row is ever the first one, stop there
                 break
-            take_row = min_row-1 #takes BD from the previous row
+            take_row = min_row+1 #takes BD from the following row
             previous_bd = bd_array
             if speed_capped_array[take_row]:
                 bd_array[take_row] -= overcapped_array[take_row]
