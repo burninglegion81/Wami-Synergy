@@ -48,22 +48,27 @@ class Backend(QObject):
     
         self.total_bd = total_bd
         #processes the inputs dict
-        self.syn_pot_active:bool = synergy_inputs_dict["Active Syn Pot"]
-        self.newb_progress_trophy:bool = synergy_inputs_dict["Newb Progress Trophy"]
-        self.pro_progress_trophy:bool = synergy_inputs_dict["Pro Progress Trophy"]
-        self.newb_power_trophy:bool = synergy_inputs_dict["Newb Power Trophy"]
-        self.pro_power_trophy:bool = synergy_inputs_dict["Pro Power Trophy"]
-        self.syn_power_soul_purchase:bool = synergy_inputs_dict["Soul Power Purchase"]
-        self.syn_power_adventure:float = synergy_inputs_dict["Adventure Power %"]
-        self.syn_power_perk_level:int = synergy_inputs_dict["Syn Power Perks Level"]
-        self.max_stage:int = synergy_inputs_dict["Max Stage"]
-        self.pomos_power_levels:int = synergy_inputs_dict["Pomos Power Levels"]
+        self.syn_pot_active:bool = synergy_inputs_dict.get("Active Syn Pot", False)
+        self.newb_progress_trophy:bool = synergy_inputs_dict.get("Newb Progress Trophy", False)
+        self.pro_progress_trophy:bool = synergy_inputs_dict.get("Pro Progress Trophy",False)
+        self.newb_power_trophy:bool = synergy_inputs_dict.get("Newb Power Trophy", False)
+        self.pro_power_trophy:bool = synergy_inputs_dict.get("Pro Power Trophy", False)
+        self.syn_power_soul_purchase:bool = synergy_inputs_dict.get("Soul Power Purchase", False)
+        self.syn_power_adventure:float = synergy_inputs_dict.get("Adventure Power %", 0)
+        self.syn_power_perk_level:int = synergy_inputs_dict.get("Syn Power Perks Level", 0)
+        self.max_stage:int = synergy_inputs_dict.get("Max Stage",415)
+        self.pomos_power_levels:int = synergy_inputs_dict.get("Pomos Power Levels",0)
+        self.syn_energy_adventure:float = synergy_inputs_dict.get("Adventure Energy %",0)
+        self.newb_energy_trophy:bool = synergy_inputs_dict.get("Newb Energy Trophy",False)
+        self.pro_energy_trophy:bool = synergy_inputs_dict.get("Pro Energy Trophy",False)
 
         self._synergy_progress:float = 0
         self._synergy_power:float = 0
+        self._synergy_energy:float = 0
         self.update_potion_bonus()
         self.calculate_synergy_progress()
         self.calculate_synergy_power()
+        self.calculate_synergy_energy()
 
     def calculate_synergy_progress(self):
         '''
@@ -99,6 +104,15 @@ class Backend(QObject):
         power = power * math.pow(1.005, self.pomos_power_levels)
         self.set_syngery_power(power)
 
+    @Slot()
+    def calculate_synergy_energy(self):
+        '''
+        calculates synergy energy multiplier
+        '''
+        energy = 1
+
+        return energy
+
     def update_potion_bonus(self):
         '''
         Gets the increase to potion effectiveness based off of max stage.
@@ -123,6 +137,15 @@ class Backend(QObject):
             self._synergy_power = value
             self.synergy_power_changed.emit(self.synergy_power)
     synergy_power = QProperty(float, get_synergy_power, set_syngery_power, notify=synergy_power_changed)
+
+    synergy_energy_changed = Signal(float)
+    def get_synergy_energy(self) -> float:
+        return self._synergy_energy
+    def set_synergy_energy(self, value:float):
+        if value != self.synergy_energy:
+            self._synergy_energy = value
+            self.synergy_energy_changed.emit(self.synergy_energy)
+    synergy_energy = QProperty(float, get_synergy_energy, set_synergy_energy, notify=synergy_energy_changed)
 
     def update_single_level(self, page:int, row:int, new_level:int):
         #pass through function to update a single rows level
@@ -199,6 +222,9 @@ class Backend(QObject):
         inputs_dict["Syn Power Perks Level"] = self.syn_power_perk_level
         inputs_dict["Max Stage"] = self.max_stage
         inputs_dict["Pomos Power Levels"] = self.pomos_power_levels
+        inputs_dict["Adventure Energy %"] = self.syn_energy_adventure
+        inputs_dict["Newb Energy Trophy"] = self.newb_energy_trophy
+        inputs_dict["Pro Energy Trophy"] = self.pro_energy_trophy
         dump["inputs dict"] = inputs_dict
         if not os.path.exists(os.path.split(JSON_SAVE_LOCATION)[0]):
             os.makedirs(os.path.split(JSON_SAVE_LOCATION)[0])
