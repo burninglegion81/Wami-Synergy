@@ -197,6 +197,7 @@ class Backend(QObject):
     def set_max_stage(self, value:int):
         if value != self.max_stage:
             self.max_stage = value
+            self.update_potion_bonus()
             self.calculate_synergy_power()
             self.calculate_synergy_progress()
     def set_pomos_power_levels(self, value:int):
