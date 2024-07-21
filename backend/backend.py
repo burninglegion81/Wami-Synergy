@@ -107,9 +107,14 @@ class Backend(QObject):
     @Slot()
     def calculate_synergy_energy(self):
         '''
-        calculates synergy energy multiplier
+        calculates synergy energy multiplier. Double checked the gain code, and this is not floored
         '''
         energy = 1
+        #adventure items, need to convert from %
+        energy = energy  * (1 + self.syn_energy_adventure/100)
+        #trophies, they are multiplicative with each other
+        energy = energy* (1 + self.newb_energy_trophy*.3)
+        energy = energy* (1 + self.pro_energy_trophy*.7)
 
         return energy
 
@@ -324,7 +329,7 @@ class Backend(QObject):
         
         print(f"Maximization finished after {iter+1} iterations, and took {time.time() - start_time} s")
         syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
-        return bd_array, gains_array, syn_energy
+        return bd_array, gains_array, syn_energy*self.synergy_energy
     
     
     def flat_up_to_row(self, page:int, row:int, bd:Optional[int] = None) -> Tuple[np.ndarray, np.ndarray, float]:
@@ -380,7 +385,7 @@ class Backend(QObject):
         print(f"Maximization finished after {iter+1} iterations, and took {time.time() - start_time} s")
         gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
         syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
-        return bd_array, gains_array, syn_energy
+        return bd_array, gains_array, syn_energy*self.synergy_energy
     
     def see_maximization_one_page(self, page:int) -> Tuple[np.ndarray, np.ndarray, float]:
         '''
@@ -427,4 +432,4 @@ class Backend(QObject):
             bd_array = np.hstack((bd_array, [final_row_bd]))
             gains_array, _, _ = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
             syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
-            return bd_array, gains_array, syn_energy
+            return bd_array, gains_array, syn_energy*self.synergy_energy
