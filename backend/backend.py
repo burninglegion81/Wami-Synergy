@@ -116,7 +116,7 @@ class Backend(QObject):
         energy = energy* (1 + self.newb_energy_trophy*.3)
         energy = energy* (1 + self.pro_energy_trophy*.7)
 
-        return energy
+        self.set_synergy_energy(energy)
 
     def update_potion_bonus(self):
         '''
@@ -167,8 +167,9 @@ class Backend(QObject):
         self.calculate_synergy_power()
         self.calculate_synergy_progress()
     def set_newb_progress_trophy(self, value:bool):
-        self.newb_progress_trophy = value
-        self.calculate_synergy_progress()
+        if value != self.newb_progress_trophy:
+            self.newb_progress_trophy = value
+            self.calculate_synergy_progress()
     def set_pro_progress_trophy(self, value:bool):
         if value != self.pro_progress_trophy:
             self.pro_progress_trophy = value
@@ -202,6 +203,19 @@ class Backend(QObject):
         if value != self.pomos_power_levels:
             self.pomos_power_levels = value
             self.calculate_synergy_power()
+    def set_syn_energy_adventure(self, value:float):
+        if value != self.syn_energy_adventure:
+            self.syn_energy_adventure = value
+            self.calculate_synergy_energy()
+    def set_newb_energy_trophy(self, value:bool):
+        if value != self.newb_energy_trophy:
+            self.newb_energy_trophy = value
+            self.calculate_synergy_energy()
+    def set_pro_energy_trophy(self, value:bool):
+        if value != self.pro_energy_trophy:
+            self.pro_energy_trophy = value
+            self.calculate_synergy_energy()
+    
             
 
     def save_json_file(self):
@@ -263,7 +277,7 @@ class Backend(QObject):
         point_2 = synergy_input["page 2 points"] 
         point_3 = synergy_input["page 3 points"]
         bd = synergy_input["total bd"] 
-        inputs = synergy_input["inputs dict"] 
+        inputs:dict = synergy_input["inputs dict"] 
 
         self.synergy_pages[1].update_all_levels(level_1)
         self.synergy_pages[2].update_all_levels(level_2)
@@ -274,16 +288,19 @@ class Backend(QObject):
         self.set_total_bd(bd)
 
         
-        self.set_syn_pot_active(inputs["Active Syn Pot"])
-        self.set_newb_progress_trophy(inputs["Newb Progress Trophy"])
-        self.set_pro_progress_trophy(inputs["Pro Progress Trophy"])
-        self.set_newb_power_trophy( inputs["Newb Power Trophy"])
-        self.set_pro_power_trophy(inputs["Pro Power Trophy"])
-        self.set_syn_power_soul_purchase(inputs["Soul Power Purchase"])
-        self.set_syn_power_adventure( inputs["Adventure Power %"])
-        self.set_syn_power_perk_level( inputs["Syn Power Perks Level"])
-        self.set_max_stage( inputs["Max Stage"])
-        self.set_pomos_power_levels( inputs["Pomos Power Levels"])
+        self.set_syn_pot_active(inputs.get("Active Syn Pot", False))
+        self.set_newb_progress_trophy(inputs.get("Newb Progress Trophy", False))
+        self.set_pro_progress_trophy(inputs.get("Pro Progress Trophy", False))
+        self.set_newb_power_trophy( inputs.get("Newb Power Trophy", False))
+        self.set_pro_power_trophy(inputs.get("Pro Power Trophy", False))
+        self.set_syn_power_soul_purchase(inputs.get("Soul Power Purchase", False))
+        self.set_syn_power_adventure( inputs.get("Adventure Power %", 0))
+        self.set_syn_power_perk_level( inputs.get("Syn Power Perks Level", 0))
+        self.set_max_stage( inputs.get("Max Stage", 415))
+        self.set_pomos_power_levels( inputs.get("Pomos Power Levels", 0))
+        self.set_syn_energy_adventure( inputs.get("Adventure Energy %", 0))
+        self.set_newb_energy_trophy(inputs.get("Newb Energy Trophy", False))
+        self.set_pro_energy_trophy(inputs.get("Pro Energy Trophy", False))
 
 
 
