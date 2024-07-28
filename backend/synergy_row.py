@@ -77,7 +77,7 @@ class SynergyRow(QObject):
             #if the points per tick is more than 1/10th of the requirement, we do a min tick calculation
             ticks_to_fill = math.ceil(self.current_progress/points_per_tick) #gets how maany ticks it's currently taking to fill the bar
             #calculates the actual gains we're getting
-            gains_per_tick = self.level * power_mult /ticks_to_fill
+            gains_per_tick = round(self.level * power_mult) /ticks_to_fill
             consume_per_tick = self.level * 2 / ticks_to_fill
 
             #calculate the required BD to get the actual number of ticks we want as 
@@ -88,7 +88,7 @@ class SynergyRow(QObject):
             return gains_per_tick, consume_per_tick, True, overcapped_bd
         else:
             #otherwise, we dont care about the speed capping impacts
-            gains_per_tick = points_per_tick * self.level * power_mult / self.current_progress
+            gains_per_tick = points_per_tick * round(self.level * power_mult) / self.current_progress
             consume_per_tick = points_per_tick * self.level * 2 / self.current_progress
             return gains_per_tick, consume_per_tick, False, 0
         
