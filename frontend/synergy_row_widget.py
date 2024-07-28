@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QFrame, QLabel, QSpinBox, QHBoxLayout, QDoubleSpinBox, QLineEdit
 from PySide6.QtGui import QRegularExpressionValidator
+import numpy as np
 from backend import Backend
 
 class SynergyRowWidget(QFrame):
@@ -33,7 +34,7 @@ class SynergyRowWidget(QFrame):
         self.point_entry = QLineEdit()
         self.point_entry.setValidator(QRegularExpressionValidator(r"^-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?$"))
         self.point_entry.setMinimumWidth(50)
-        self.point_entry.setText(str(self.backend.synergy_pages[self.page].synergy_rows[self.row].current_points))
+        self.update_text(self.backend.synergy_pages[self.page].synergy_rows[self.row].current_points)
 
         self.bonus_label= QLabel("Bonus:")
         self.bonus_display = QLabel("")
@@ -50,7 +51,7 @@ class SynergyRowWidget(QFrame):
     def connect_signals(self):
         self.backend.synergy_pages[self.page].synergy_rows[self.row].bonus_changed.connect(self.update_bonus)
         self.backend.synergy_pages[self.page].synergy_rows[self.row].level_changed.connect(lambda p, r, l: self.level_entry.setValue(l))
-        self.backend.synergy_pages[self.page].synergy_rows[self.row].points_changed.connect(lambda p, r, l: self.point_entry.setText(str(l)))
+        self.backend.synergy_pages[self.page].synergy_rows[self.row].points_changed.connect(lambda page, row, points: self.update_text(points))
         self.level_entry.editingFinished.connect(lambda:self.backend.update_single_level(self.page, self.row, self.level_entry.value()))
         self.point_entry.editingFinished.connect(lambda:self.backend.update_single_point(self.page, self.row, float(self.point_entry.text())))
     
@@ -62,3 +63,9 @@ class SynergyRowWidget(QFrame):
             self.bonus_display.setText(f"x{bonus:.1f}")
         else:
             self.bonus_display.setText(f"x{bonus:.3f}")
+
+    def update_text(self, points:float):
+        if np.abs(points) > 1e6:
+            self.point_entry.setText(f"{points:.3e}")
+        else:
+            self.point_entry.setText(f"{points:.0f}")
