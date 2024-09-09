@@ -330,8 +330,17 @@ class Backend(QObject):
         max_iter = 100*self.total_bd
         iter = 0
         previous_bd = None
+        def continue_function() -> bool:
+            #have general continuation check first
+            #then, if all rows are positive, but any row but the first is overcapped, continue on
+            # we want to minimize wasted BD
+            val = np.any(gains_array < 0) and iter < max_iter and bd_array is not previous_bd 
+            if not np.any(gains_array < 0) and np.any(overcapped_array[1:] != 0):
+                val = True
+
+            return val
         
-        while np.any(gains_array < 0) and iter < max_iter and bd_array is not previous_bd:
+        while continue_function():
             iter += 1
             previous_bd = bd_array.copy()
             min_row = np.argmin(gains_array)
@@ -381,7 +390,7 @@ class Backend(QObject):
             iter += 1
             min_row = np.argmin(gains_array)
             if min_row ==  row-1:
-                #if the min row is ever the first one, stop there
+                #if the min row is ever the final one, stop there
                 break
             take_row = min_row+1 #takes BD from the following row
             if previous_bd is bd_array:
