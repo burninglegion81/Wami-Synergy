@@ -37,5 +37,6 @@ QApplication.setApplicationName("Synergy Optimizer")
 QApplication.setApplicationDisplayName("Synergy Optimizer")
 
 main = MainScreen(backend)
+app.setStyle("Fusion")
 main.show()
 app.exec()
