@@ -408,7 +408,7 @@ class Backend(QObject):
             gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
 
 
-        bd_array = previous_bd
+        bd_array = previous_bd if previous_bd is not None else bd_array
         print(f"Maximization finished after {iter+1} iterations, and took {time.time() - start_time} s")
         gains_array, speed_capped_array, overcapped_array = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
         syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
@@ -449,6 +449,7 @@ class Backend(QObject):
         '''
         Does a min tick number of BD in the desired row, and then does a flat distribution below that row
         '''
+        print(page, row)
         final_row_bd, final_row_gains = self.synergy_pages[page].get_min_tick(row, self.total_bd, self.synergy_progress, self.synergy_power)
         remaining_bd = self.total_bd - final_row_bd
         if row == 1:
