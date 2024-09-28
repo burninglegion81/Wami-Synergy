@@ -460,3 +460,32 @@ class Backend(QObject):
             gains_array, _, _ = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
             syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
             return bd_array, gains_array, syn_energy*self.synergy_energy
+
+    def maximize_energy_on_page(self, page:int)-> Tuple[np.ndarray, np.ndarray, float]:
+        '''
+        Maximizes the synergy energy on one page. Algo is:
+            -Get the ordering of the synergy rows based off of best energy efficiency
+            -For each row:
+                -throw remaining BD into it, and see if its overcapped
+                -set the final bd array for that row to be equal to the non-overcapped BD
+                -if the row was not overcapped, break
+                -if it was, set remaining BD to the overcapped BD and continue to the next best row
+            -after the BD array is acquired, calculate gains/synergy gains, and return
+        '''
+        row_efficiency_array = self.synergy_pages[page].get_energy_efficiency_order() #0 indexed, need to +1
+        bd_array = np.zeros(7, dtype=int)
+        remaining_bd = self.total_bd #counter for remaining BD
+
+        for best_row in row_efficiency_array:
+            _, _, speed_capped, overcapped = \
+                self.synergy_pages[page].synergy_rows[best_row+1].calculate_gains_per_tick(remaining_bd, self.synergy_progress, self.synergy_power)
+            bd_array[best_row] = remaining_bd - overcapped
+            if overcapped == 0:
+                break
+            remaining_bd = overcapped
+        gains_array, _, _ = self.synergy_pages[page].get_all_gains_per_tick(bd_array, self.synergy_progress, self.synergy_power)
+        syn_energy, _, _ = self.synergy_pages[page].get_all_syn_energy_per_tick(bd_array, self.synergy_progress)
+
+        return bd_array, gains_array, syn_energy * self.synergy_energy
+        
+
