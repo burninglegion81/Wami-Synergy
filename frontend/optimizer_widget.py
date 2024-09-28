@@ -54,12 +54,15 @@ class OptimizerWidget(QWidget):
         self.max_page_button = QRadioButton("Show potential gains on one page")
         self.min_flat_below_button = QRadioButton("Min tick a row, and do a flat distribution below it.")
         self.min_page_button = QRadioButton("See BD required to min tick each row on one page")
+        self.max_energy_button = QRadioButton("Maximize synergy energy gains for this page.")
         #button to maximuze synergy energy gains/hour
         self.method_group.addButton(self.max_button)
         self.method_group.addButton(self.flat_button)
         self.method_group.addButton(self.max_page_button)
         self.method_group.addButton(self.min_flat_below_button)
         self.method_group.addButton(self.min_page_button)
+        self.method_group.addButton(self.max_energy_button)
+
 
         self.max_button.setChecked(True)
         
@@ -76,6 +79,7 @@ class OptimizerWidget(QWidget):
         setup_layout.addWidget(self.max_page_button,7,0,1,2)
         setup_layout.addWidget(self.min_flat_below_button,8,0,1,2)
         setup_layout.addWidget(self.min_page_button, 9,0,1,2)
+        setup_layout.addWidget(self.max_energy_button, 10,0,1,2)
 
         #now we display the results of the script optimization
         self.results_groupbox = QGroupBox("Optimization Results")
@@ -193,6 +197,8 @@ class OptimizerWidget(QWidget):
             bd, gains_tick, syn_energy = self.backend.min_tick_row_flat_below(page, row)
         elif selected_button == self.min_page_button:
             bd, gains_tick, syn_energy = self.backend.see_min_tick_one_page(page)
+        elif selected_button == self.max_energy_button:
+            bd, gains_tick, syn_energy = self.backend.maximize_energy_on_page(page)
 
         self.update_results(bd, gains_tick, syn_energy)
     
@@ -233,6 +239,6 @@ class OptimizerWidget(QWidget):
                 self.rel_gains_widgets[i].setText("")
         #sets synergy energy
         ticks_total = 36000*self.hours_entry.value()
-        self.syn_energy_display.setText(f"{syn_energy*ticks_total:.1f}")
+        self.syn_energy_display.setText(self.text_helper(syn_energy*ticks_total))
 
         return
