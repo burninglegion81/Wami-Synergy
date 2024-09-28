@@ -155,3 +155,9 @@ class SynergyRow(QObject):
             #otherwise, we dont care about the speed capping impacts
             gains_per_tick = points_per_tick * self.synergy_energy_per_fill / self.current_progress
             return gains_per_tick, False, 0
+        
+    def get_energy_efficiency(self):
+        '''
+        Returns the energy efficiency of this row. This im defining as energy/current progress required
+        '''
+        return self.synergy_energy_per_fill/self.current_progress

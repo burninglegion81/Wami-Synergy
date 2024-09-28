@@ -89,6 +89,15 @@ class SynergyPage(QObject):
         required_bd = self.synergy_rows[row].calculate_bd_for_min_tick(baby_demon_available, progress_mult)
         gains_tick,_, _, _ = self.synergy_rows[row].calculate_gains_per_tick(required_bd, progress_mult, power_mult)
         return required_bd, gains_tick
+    
+    def get_energy_efficiency_order(self) -> np.ndarray:
+        '''
+        Returns the order of energy efficiency for the rows of this page.
+        As a note, this is 0 indexed and needs to be corrected later
+        '''
+        ordering_dict = {i:self.synergy_rows[i+1].get_energy_efficiency() for i in range(7)}
+        ordered_dict = {k:v for k, v in sorted(ordering_dict.items(), key= lambda item:item[1], reverse=True)}
+        return ordered_dict
 
 
     def get_all_levels(self):
